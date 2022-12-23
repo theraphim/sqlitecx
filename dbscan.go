@@ -1,10 +1,12 @@
 package sqlitecx
 
 import (
+	"reflect"
 	"sync"
 	"time"
 
 	"crawshaw.io/sqlite"
+	"github.com/iancoleman/strcase"
 )
 
 type Rows struct {
@@ -117,11 +119,77 @@ var textTimeFormats = []string{
 }
 
 type QueryPrep struct {
-	prepFn func(s *sqlite.Stmt)
+	prepFn   func(s *sqlite.Stmt)
+	prepBind reflect.Value
 }
 
 func PrepFunc(prepFn func(s *sqlite.Stmt)) QueryPrep {
 	return QueryPrep{prepFn: prepFn}
 }
 
+func PrepBind(value interface{}) QueryPrep {
+	return QueryPrep{prepBind: reflect.ValueOf(value)}
+}
+
 func NoPrep() QueryPrep { return QueryPrep{} }
+
+func bindFields(s *sqlite.Stmt, rv reflect.Value) {
+	rt := rv.Type()
+	rf := reflect.VisibleFields(rt)
+
+	knownNames := make(map[string]struct{})
+	for i := 0; i < s.BindParamCount(); i++ {
+		knownNames[s.BindParamName(i+1)] = struct{}{}
+	}
+
+	for _, v := range rf {
+		if !v.IsExported() {
+			continue
+		}
+		n := strcase.ToSnake(v.Name)
+		fv := rv.FieldByIndex(v.Index)
+		if fv.IsZero() {
+			continue
+		}
+
+		cn := ":" + n
+		if _, ok := knownNames[cn]; !ok {
+			continue
+		}
+
+		switch rv := fv.Interface().(type) {
+		case bool:
+			s.SetBool(cn, rv)
+		case int:
+			s.SetInt64(cn, int64(rv))
+		case int8:
+			s.SetInt64(cn, int64(rv))
+		case int16:
+			s.SetInt64(cn, int64(rv))
+		case int32:
+			s.SetInt64(cn, int64(rv))
+		case int64:
+			s.SetInt64(cn, rv)
+		case uint:
+			s.SetInt64(cn, int64(rv))
+		case uint8:
+			s.SetInt64(cn, int64(rv))
+		case uint16:
+			s.SetInt64(cn, int64(rv))
+		case uint32:
+			s.SetInt64(cn, int64(rv))
+		case uint64:
+			s.SetInt64(cn, int64(rv))
+		case string:
+			s.SetText(cn, rv)
+		case []byte:
+			if len(rv) != 0 {
+				s.SetBytes(cn, rv)
+			}
+		case float64:
+			s.SetFloat(cn, rv)
+		case float32:
+			s.SetFloat(cn, float64(rv))
+		}
+	}
+}

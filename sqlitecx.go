@@ -5,9 +5,9 @@ import (
 	"math"
 	"time"
 
-	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/georgysavva/scany/v2/dbscan"
+	sqlite "github.com/go-llsqlite/llsqlite"
+	"github.com/go-llsqlite/llsqlite/sqlitex"
 )
 
 type Executor struct {
@@ -31,6 +31,8 @@ func PooledExecute(ctx context.Context, pool *sqlitex.Pool, query string, prep Q
 func processQueryPrep(s *sqlite.Stmt, p QueryPrep) {
 	if p.prepFn != nil {
 		p.prepFn(s)
+	} else if p.prepBind.IsValid() {
+		bindFields(s, p.prepBind)
 	}
 }
 

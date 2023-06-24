@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"crawshaw.io/sqlite"
+	sqlite "github.com/go-llsqlite/llsqlite"
 	"github.com/iancoleman/strcase"
 )
 

@@ -21,7 +21,10 @@ func (s *Rows) Close() error {
 		if s.transient {
 			s.err = s.s.Finalize()
 		} else {
-			s.err = s.s.ClearBindings()
+			s.err = s.s.Reset()
+			if err := s.s.ClearBindings(); err != nil {
+				s.err = err
+			}
 		}
 	})
 	return s.err

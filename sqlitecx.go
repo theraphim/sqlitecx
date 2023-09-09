@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/georgysavva/scany/v2/dbscan"
-	sqlite "github.com/go-llsqlite/llsqlite"
-	"github.com/go-llsqlite/llsqlite/sqlitex"
+	sqlite "github.com/go-llsqlite/crawshaw"
+	"github.com/go-llsqlite/crawshaw/sqlitex"
 )
 
 type Executor struct {

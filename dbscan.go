@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	sqlite "github.com/go-llsqlite/llsqlite"
+	sqlite "github.com/go-llsqlite/crawshaw"
 	"github.com/iancoleman/strcase"
 )
 

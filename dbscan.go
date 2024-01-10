@@ -38,6 +38,10 @@ func (s *Rows) Next() bool {
 	return hasRow
 }
 
+func (s *Rows) NextResultSet() bool {
+	return false
+}
+
 func (s *Rows) Err() error {
 	return s.err
 }

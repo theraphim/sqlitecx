@@ -120,3 +120,14 @@ func (s *Wrapper) run() {
 func (s *Wrapper) DB() *sqlitex.Pool {
 	return s.db
 }
+
+func (s *Wrapper) RunInTransaction(ctx context.Context, fn func(*sqlite.Conn) error) (err error) {
+	conn := s.db.Get(ctx)
+	if conn == nil {
+		return ctx.Err()
+	}
+	defer s.db.Put(conn)
+	defer sqlitex.Save(conn)(&err)
+	err = fn(conn)
+	return err
+}
